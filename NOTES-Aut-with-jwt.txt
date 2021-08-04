@@ -1,0 +1,956 @@
+- open terminal and type npm init then enter
+
+- then for this time just keep pressing enter
+
+- now we first install express in our work folder:
+npm install express
+
+- and next is nodemon to restart our server but well not include it in the main packages that we'll send to a server:
+npm install --save-dev nodemon
+
+- now we create a new file named index.js
+
+- now we'll try our server if it works:
+
+- on the index.js copy:
+============
+const express = require('express');
+const app = new express();
+
+// now lets make a port
+app.listen(3000, () => console.log('server up and running'));
+============
+
+- after that we create a new folder called routes here well be putting all our routes
+
+- create a new file on the routes folder and name it auth.js this gona be our authentication route
+
+- in that file we'll create our router copy code we'll be putting our multiple routes iin here as well:
+============
+const router = require('express').Router();
+
+
+// creating our empty router here
+router.post('/register', (req, res) => {
+    res.send('Register');
+});
+
+
+// to export this on other files
+module.exports = router;
+============
+
+- now we import it on the index.js file just copy:
+============
+const express = require('express');
+const app = new express();
+
+
+// import routes
+const authRoute = require('./routes/auth');
+
+
+// now lets make a port
+app.listen(3000, () => console.log('server up and running'));
+============
+
+- now we make our middle wears so everything in authroute will be needing to go thru here:
+============
+const express = require('express');
+const app = new express();
+
+
+// import routes
+const authRoute = require('/routes/auth');
+
+// Route Middleweares
+app.use('/api/user', authRoute);
+
+
+// now lets make a port
+app.listen(3000, () => console.log('server up and running'));
+============
+
+- now before we start our server let's to our package.json first and delete everything inside the scripts part and put this instead or server will have error on running it:
+
+"start": "nodemon index.js"
+
+- now type in terminal: 
+npm start
+
+- and it should show the console log server up and running
+
+- now we can open up the postman 
+
+- then enter the link:
+http://localhost:3000/api/user/register
+
+- and set to post and hit send and it sould give us back the msg "Register" 
+
+- now we need a database so we'll connect to one
+
+- we'll use mongodb for the database
+
+- create a free account here before we start and make a new cluster:
+https://www.mongodb.com/cloud/atlas/register
+
+- now create a new cluster the free one
+
+- select aws, northamerica virginia (any), make sure its the free one on the cluster tier, cluster name leave it as is
+
+- then create cluster, might take some time
+
+- while waiting we can go to the security and fix some things
+
+- and add new database user and enter user and pass for it
+
+- set atlas admin and add user
+
+- then on the network access we can add ip address and give allow access anywhere or put yur own ip address then enter
+
+- now let's go back to the index.js, we need to create a model of how our data is gonna look like
+
+- how user is gonna look like, like username, pass, email
+
+- to create a model and to make mongo to be easy to use and connect to it and everything
+
+- we'll install a package called mongoose
+
+- first close server with crlt + c ad yes
+
+- then type this:
+npm install mongoose
+
+- going back to the mongo db atlas, just click the connect
+
+- then select connect to your application
+
+- then yur gona get this string 
+
+- and first we go back to our vs code and start up the server again after the mongoose installation
+
+- to connect the db, lets import the mongoose first put this at the top with other imports on index.js:
+const mongoose = require('mongoose');
+
+- and to connect copy:
+============
+// connect to DB
+mongoose.connect('');
+============
+
+- then enter inside the connect('') the genereated string from mongodb atlas:
+============
+const express = require('express');
+const app = new express();
+const mongoose = require('mongoose');
+
+
+// connect to DB
+mongoose.connect('mongodb+srv://arvinken04:<password>@cluster0.b8a3l.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
+
+// import routes
+const authRoute = require('./routes/auth');
+
+// Route Middleweares
+app.use('/api/user', authRoute);
+
+
+// now lets make a port
+app.listen(3000, () => console.log('Server Up and Running'));
+============
+
+- and change the password from the string by using the one that you put earlier
+
+- next is we put comma after the string and create a new arrow function beside it:
+============
+const express = require('express');
+const app = new express();
+const mongoose = require('mongoose');
+
+
+// connect to DB
+mongoose.connect('mongodb+srv://arvinken04:Id20@@cluster0.b8a3l.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', 
+() => console.log('connected to db!')
+);
+
+// import routes
+const authRoute = require('./routes/auth');
+
+// Route Middleweares
+app.use('/api/user', authRoute);
+
+
+// now lets make a port
+app.listen(3000, () => console.log('Server Up and Running'));
+============
+
+- it will show a warning, so just copy the object { useNewUrlParser: true }
+and paste it right after yur db string
+
+- if another warning comes up just add them together with the prev warning like this:
+{ useNewUrlParser: true, useUnifiedTopology: true  },
+
+- save and it should show the connected to db without warnings
+
+- now we wanna make sure we move our db string so our password is protected
+
+- to do that we can install a package that will do the trick
+
+- close server again and install dotenv:
+npm install dotenv
+
+- what this does is it creates an environment variable and we can store the password in there and when we push the code on github or something, our code wont say our passwords there
+
+- now create new file on the root folder and name it .env
+
+- and write this:
+============
+DB_CONNECT = <cut the entire db string here>
+============
+
+- save the file then we now import it on the index.js
+
+- remove the ' ' from db string on index.js
+
+- to import just type:
+const dotenv = require('dotenv');
+
+- then copy:
+============
+// for dotenv to work
+dotenv.config();
+============
+
+- then on the place where the db string was, type:
+process.env.DB_CONNECT
+
+- code should look like this now:
+============
+const express = require('express');
+const app = new express();
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+
+// for dotenv to work
+dotenv.config();
+
+
+// connect to DB
+mongoose.connect( process.env.DB_CONNECT, { useNewUrlParser: true, useUnifiedTopology: true  }, () => 
+    console.log('connected to db!')
+);
+
+// import routes
+const authRoute = require('./routes/auth');
+
+// Route Middleweares
+app.use('/api/user', authRoute);
+
+
+// now lets make a port
+app.listen(3000, () => console.log('Server Up and Running'));
+============
+
+- then we start our server now and it should show connected to db
+
+- now let's create our model, make a new folder named model
+
+- then create a file name User.js inside model folder
+
+- in User.js import mongoose then copy this:
+============
+const mongoose = require('mongoose');
+
+// creating a scema which is an object that represents the model of our user
+const userSchema = new mongoose.Schema({
+    // here we define the properties we wanna have, which is also an object where we can define more properties
+    name: {
+        type: String,
+        required: true,
+        max: 255,
+        min: 6
+    },
+    email:{
+        type: String,
+        required: true,
+        max: 255,
+        min: 6
+    },
+    password:{
+        type: String,
+        required: true,
+        max: 1024,
+        min: 6
+    },
+    date:{
+        type: Date,
+        default: Date.now
+    },
+
+
+
+});
+
+
+// to enable to export
+module.exports = mongoose.model('User',userSchema);
+
+============
+
+- now we can use this to add an register users
+
+- properties need to fill out: password, email, name, date
+
+- now we go and try this out
+
+- we wont use it on index.js but in the routes on auth.js 
+
+- now we import this model that we made:
+const User = require('../model/User');
+
+- now we have access to the User, and make a request inside the router post
+
+- so instead of sending the "register" str back we delete it
+
+- and just copy this:
+============
+const router = require('express').Router();
+const User = require('../model/User');
+
+
+// creating our empty router here
+router.post('/register', (req, res) => {
+    const user = new User({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+
+    });
+});
+
+
+// to export this on other files
+module.exports = router;
+============
+
+- now we need a body parser to read it
+
+- go back to index.js to add that body parser
+
+- we'll add it under the connecting of our db:
+============
+// Middlewear to send post requests
+app.use(express.json());
+============
+
+- let's try this out by saving the created user by adding a async on auth.js file before (req, res):
+============
+// creating our empty router here
+router.post('/register', async (req, res) => {
+    const user = new User({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+
+    });
+});
+============
+
+- then we add a try catch under const user:
+============
+try{
+        // here we try to save user
+        const savedUser = await user.save();
+        res.send(savedUser);
+    }catch(err){
+        // incase we catch an err we respond with this
+        res.status(400).send(err);
+    }
+============
+
+- let's try it out on postman, go to with post:
+http://localhost:3000/api/user/register
+
+- on headers remove authentication first, and on the body, select raw then json as content type, should be application json
+
+- then copy this:
+============
+{
+    "name": "Arvin Ken",
+    "email": "boi@yahoo.com",
+    "password": "arvin123"
+}
+============
+
+- and when we hit send, we should get back our data below
+
+- it generates the date, name, id and everything
+
+- now let's see if it actually was submitted to our db
+
+- let's go back to mongodb atlas, close the string generator for the app connection
+
+- then hit refresh, then check our server by going to the collections 
+
+- and pray to the gods for it to work
+
+- and you should see "users" created on myFirstDatabase with the first data entry we made earlier
+
+- problem is we should not store passwords here and we have not done any validation for now
+
+- like the email is not an actuall email etc
+
+- but first let us try to hash passwords
+
+- okay, let's delete the first enrty for now them go back to visual studio on auth.js
+
+- to validate the infos we get from users, we'll be using the package called joi
+
+- terminate server and type:
+npm install @hapi/joi
+
+- after just restart the server:
+ npm start
+
+- let's now start on validation by importing joi on the auth.js
+
+- we can actually also create a schema with it so we'll try that first
+
+- it's like the other one where we create name but we can use it's lbrary like Joi.string().etc for validation copy this:
+============
+// sample schema with joi
+const schema = Joi.object(
+    {
+        name: Joi.string()
+            .min(6)
+            .required(),
+        email: Joi.string()
+            .min(6)
+            .required()
+            .email(),
+        password: Joi.string()
+            .required()
+            .min(6)
+    }
+);
+============
+
+- then before submitting everything inside the post register we can validate the response from user. copy before the creation of new user and comment out the const user to try and catch first:
+============
+// creating our empty router here
+router.post('/register', async (req, res) => {
+
+    // Validation DATA before we make a user
+        // parameters are the body where we get the data and the schema that we made
+        //it's an object so we can actually store it as an object
+    const validation = schema.validate(req.body);
+    res.send(validation);
+
+    // const user = new User({
+    //     name: req.body.name,
+    //     email: req.body.email,
+    //     password: req.body.password,
+
+    // });
+    // try{
+    //     // here we try to save user
+    //     const savedUser = await user.save();
+    //     res.send(savedUser);
+    // }catch(err){
+    //     // incase we catch an err we respond with this
+    //     res.status(400).send(err);
+    // }
+});
+============
+
+- save, then let's go to postman and use the same input we used to send
+
+- it should send as back no err because there was no err.
+
+- but if we give an err like giving a 2 char on password.. it will send an err message with a detail of the err. it does everything for us already.
+
+- but we don't need the other values, we just want the err msg
+
+- so just change the const validation to { error }:
+const { error } = schema.validate(req.body);
+
+- and change the res.send(validation) to:
+res.send(error.details[0].message);
+
+- and it will just return the err message
+
+- and we wanna make sure we wont create the user if there is an error, so let's put an if statement:
+if(error) return res.status(400).send(error.details[0].message);
+
+- this means if there is an err the code after validation wont run anymore
+
+- now we can uncomment the creation of users
+
+- save and try postman again
+
+- and if there is an err it should send an err msg and it will only create the user if it has no err
+
+- go back to altas and hit refresh
+
+- copy:
+============
+const router = require('express').Router();
+const User = require('../model/User');
+
+// Validation
+const Joi = require('@hapi/joi');
+
+// sample schema with joi
+const schema = Joi.object(
+    {
+        name: Joi.string()
+            .min(6)
+            .required(),
+        email: Joi.string()
+            .min(6)
+            .required()
+            .email(),
+        password: Joi.string()
+            .required()
+            .min(6)
+    }
+);
+
+
+// creating our empty router here
+router.post('/register', async (req, res) => {
+
+    // Validation DATA before we make a user
+        // parameters are the body where we get the data and the schema that we made
+        //it's an object so we can actually store it as an object
+    const { error } = schema.validate(req.body);
+    if(error) return res.status(400).send(error.details[0].message);
+
+    const user = new User({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+
+    });
+    try{
+        // here we try to save user
+        const savedUser = await user.save();
+        res.send(savedUser);
+    }catch(err){
+        // incase we catch an err we respond with this
+        res.status(400).send(err);
+    }
+});
+
+
+
+
+// to export this on other files
+module.exports = router;
+============
+
+- we just finished the validation, next will be login
+
+- we'll separate the schema with joy on it's own file
+
+- on the root folder, create a file called validation.js
+
+- this is what should be deleted on auth and should have on new validation.js file:
+============
+// Validation
+const Joi = require('@hapi/joi');
+
+// sample schema with joi
+const schema = Joi.object(
+    {
+        name: Joi.string()
+            .min(6)
+            .required(),
+        email: Joi.string()
+            .min(6)
+            .required()
+            .email(),
+        password: Joi.string()
+            .required()
+            .min(6)
+    }
+);
+============
+
+- and we'll wrap the schema into a function because we might want to have multiple schemas depending on what we wanna do
+
+- so just put the schema inside an arrow function called:
+
+// Register Validation 
+const registerValidation = () => {
+<insert here>
+};
+
+- and on the auth.js we dont have that schema.valdate anymore but we want that req.body
+
+- what we''re gona do is we gona pass a parameter in registerValidation() on validation.js
+
+- and import everything in auth.js and just use the registerValidation() and just pass the req.body
+
+- we'll just move everything in the validation.js
+
+- so remove this on auth.js as well:
+============
+// Validation DATA before we make a user
+        // parameters are the body where we get the data and the schema that we made
+        //it's an object so we can actually store it as an object
+    const { error } = schema.validate(req.body);
+    if(error) return res.status(400).send(error.details[0].message);
+============
+
+- and on validation.js, let's put a parameter on the registerValidation called data
+
+- then, below const schema just add there the Joi validatioin with return:
+return schema.validate(data);
+
+- then now we export the module to import on auth.js:
+module.exports.registerValidation = registerValidation;
+
+- we'll also make now the login validation same file
+
+- almost the same but it only needs the email and pass:
+============
+// Login Validation 
+const loginValidation = (data) => {
+    //sample schema with joi
+    const schema = Joi.object(
+        {
+            email: Joi.string()
+                .min(6)
+                .required()
+                .email(),
+            password: Joi.string()
+                .required()
+                .min(6)
+        }
+    );
+    return schema.validate(data);
+
+    
+};
+============
+
+- then make the same export for it as well:
+module.exports.loginValidation = loginValidation;
+
+- save and going back to auth.js we still need that if er condition:
+if(error) return res.status(400).send(error.details[0].message);
+
+- now let's just import first the validation in auth.js put this with other imports:
+const { registerValidation } = require('../validation');
+
+- now above the if err condition just do the same but we'll be using the import from validation and use req.body on our parameter:
+const { error } = registerValidation(req.body);
+
+- now save and try iin postman if everything still works the same
+
+- now we wanna make sure that on our register we have no duplicate emails
+
+- and we'll do it under/after we validate the data
+
+- we'll be checking if the user is already in the database:
+//Checking if user is already in the database
+    const emailExist = await User.findOne({email: req.body.email});
+
+- and now if our email exist:
+if(emailExist) return res.status(400).send('Email already exists');
+
+- save and now try to send using same email on postman and see if it gives the err msg and a diff one if it creates the user
+
+- onto the next problem, we'll try to make the passwords of users hashed. we always have to
+
+- so now we close the server first to install a package called bcryptjs, so just type:
+npm install bcryptjs
+
+- this will help us encrypt our passwords 
+
+- now we will do the hanging rigth after we check our database for duplicate users and before creating our user
+
+- first thing we need to do is to generate a salt
+
+- first we import the bcryptjs:
+const bcrypt = require('bcryptjs');
+
+- then we create the salt: 
+const salt = await bcrypt.genSalt(10);
+
+- the salt is a messed up strings and 10 is the complexity which is default
+
+- now we create the hash and put the body.pass inside the parameters with the salt:
+const hashPassword = await bcrypt.hash(req.body.password, salt);
+
+- the salt basically combines with the password to mess up or encrypt the text that only bcrypt can decrypt
+
+- what we did is we generate a salt and we hash the password with the salt
+
+- now on the create user we dont add the req.body.password but instead we use the hashPassword:
+password: hashedPassword
+
+- save, run server then try out a new user on postman and it should return us a hashed password if user is created
+
+- now we go back to our atlas database and remove users that has no hashed passwords
+
+- and now let's create another user so we could try logging in
+
+- before that, rather than sending the whole user, let's not send other infos back like hashed password and stuff
+
+- on auth.js inside the try{} rather than sending the whole savedUser, what we can do is just add an object there instead:
+res.send({user: user._id});
+
+- now let's try creating another one user to try and see if it sends only the user ID instead of everything else after creating the user
+
+- now let's try to create our login
+
+- so on auth.js file after the post we'll make the login there
+
+- we'll do post with req and res again:
+============
+//LOGIN
+router.post('/login', (req, res) => {
+
+
+
+});
+============
+
+- previously on our validation we made a schema for login and need email and password
+
+- so now we'll import the loginValidation just add it beside register validation like this:
+const { registerValidation, loginValidation } = require('../validation');
+
+- then just reuse the ones we made for data validation on the register post just make sure to change register to login
+
+- on checking if user exist we'll change it to false where if it does not exist, it will send the status 400 with msg of Invalild Email or Password and change emailExist to user coz we want to get all info of user not just the email to compare email and pass
+============
+//Checking if user exist
+    const user = await User.findOne({email: req.body.email});
+    if(!user) return res.status(400).send('Email is not found!');
+============
+
+- now we wanna check if pass word is correct
+
+- we can use bcrypt.compare() to compare the info that our user sends in and check that hashed pass from our database
+
+- and we'll put in the parameters the password from the body which the user inputs plus the password from the user info that we check that exist with email:
+============
+const validPass = await bcrypt.compare(req.body.password, user.password);
+============
+
+- then we use a if condition where if(!validPass) then we return a stat 400 with msg Invalid Password:
+============
+if(!validPass) return res.status(400).send('Invalid Password!');
+============
+
+- but it's better to use both Invalid Email or Password for better protection. we'll just diffirentiate email and pass for the purpose of debugging if both works
+
+- and if once everything is checked, we can just send back a res.send just for now like msg Loged in! and make sure to put async after '/login', in router:
+res.send('Logged in!');
+
+- now lets navigate login in postman:
+http://localhost:3000/api/user/login
+
+- we don't need the name anymore, only the email and the password
+
+- now let's check first if email and pass validation works, check if email exist validation, and check if correct password works as well, and if we get back logged in! if email and pass are correct
+
+- In our last step, we'll be adding the JWT 
+
+- Json Web Token is like a token that you show or let them know that you are logged in
+
+- so how can we add that?
+
+- we add it right after we loged in
+
+- so close server first, then install jsonwebtoken:
+npm install jsonwebtoken
+
+- then we import it on auth.js:
+const jwt = require('jsonwebtoken');
+
+- next is on our /login after checking correct password we'll create and assign a token
+
+- we can send a long info on that jwt token:
+// Create and assign a token
+        const token = jwt.sign();
+
+- we'll add the id with a random token secret in the parameters and this token lives in yur .env
+
+- we'll have to make a token secret on our .env file:
+TOKEN_SECRET = <random string>
+
+- then on auth.js we can access that on process:
+const token = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET);
+
+- then we can add the token on our header we'll call it auth-token then the token we made:
+res.header('auth-token', token);
+
+- let's delete the res.send(logged in!) then send token in the screen first instead:
+res.header('auth-token', token).send(token);
+
+- so save, run server, then on postman rather than sending that success log in it should give us the token
+
+- if err occur, just refresh mongodb and postman, this err:
+MongooseError: Operation `users.findOne()` buffering timed out after 10000ms
+
+- so when we get the long string token back after logging in, we can copy this and if you go to jwt.io:
+https://jwt.io/
+
+- you can paste yur jwt token in the encode section and it will show you the user id that we have saved in with the token
+
+- and the iat means is the date when we created the token
+
+- and you can send this in yur front end code and can check that yur user is logged in
+
+- now since yu have that login that token in yur front end, you can make multiple requests, and once yu have that token, its gona remember that its you
+
+- and even with private routes, you can verify with that token
+
+- we can also make the token only available for an hr or sumthing but for now we assign it to our header
+
+- and now on our postman take a look on our headers, below that auth-token is available
+
+- now let's try to create private routes with this
+
+- on routes folder create a new file named verifyToken.js 
+
+- then import jwt:
+const jwt = require('jsonwebtoken');
+
+- and we'll create a function there like another middle wear function named auth that we can add to routes that we want to be protected:
+function auth (req, res, next){
+
+};
+
+- inside the auth(), we can get that token from our header:
+============
+// gets value of auth-token from header
+    const token = req.header('auth-token');
+============
+
+- then if it does not return us a token we send stat 401:
+============
+// Check if has no token we send 401 stat with access denied
+    if(!token) return res.status(401).send('Access Denied!');
+============
+
+- after we check, we'll do a try and catch to verify token and give acces to user if they are verified
+
+- if token invalid we sen res 400 with invalid token text
+============
+ try{
+        // Verifying token with our tokensecret we made
+        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+        //If verified we verified our user for access
+        req.user = verified;
+        
+    }catch(err){
+        res.status(400).send('Invalid Token!');
+    }
+============
+
+- now we made a middle wear function and we can add this to any route we want to be protected that we don't want them to access it without having this token
+
+- so we assigned that token when a user logged in, and set that token in res headder as auth-token
+
+- now every private route that we're trying to access we'll add this function to check if the token is available
+
+- now we'll make the route private, let's create a new file on routes folder named posts.js
+
+- copy this inside:
+============
+const router = require('express').Router();
+
+
+router.get('/', (req,res) => {
+    res.json({
+        posts: {
+            title: 'my first post', 
+            description: 'random data you shouldn\'t access'
+        }
+
+    });
+
+});
+
+
+// to export this on other files
+module.exports = router;
+============
+
+- then we import it on index.js:
+============
+const postRoute = require('./routes/posts');
+============
+
+- and down in our route middlewear we can add postRoute:
+============
+app.use('/api/posts', postRoute);
+============
+
+- save them on postman navigate api/posts:
+http://localhost:3000/api/posts
+
+- set it to get and hit send
+
+- go the the body below
+
+- and we should have get back the information title and descriptions
+
+- the way to make this private is to go on the file named verifyToken
+
+- just remove the auth then add module.exports = function(req, res, next)
+
+- so if we wanna make posts routes private all we'll do is go to posts.js import the verifyTokenmodule 
+============
+const verify = require('./verifyToken');
+============
+
+- then just add it after the slaash on router.get, like a middle weare:
+============
+router.get('/', verify, (req,res) => {
+
+});
+============
+
+- back to the postman if we hit send again, it should say access dennied
+
+- now let's see how to have access
+
+- we can go to api user login on postman:
+http://localhost:3000/api/user/login
+
+- set to post and with the email and pass info hit send to get token copy the token
+
+- and now if we go to GET, and go back to api posts and send, gives s acces denied again 
+
+- then enter a token in our header above enter auth-token on key and the copied token on the value and hit send
+
+- it wont work cause we have to add next to continue to next middle wear and everything
+
+-  got othe verifiedToken.js and after req.user = verified;
+call next(); save then go back to postman
+
+- now it shows the title and description info again
+
+- so without the auth-token if yu untic it it says access denied and vice versa
+
+- now we have access to this user as long as we provide that token:
+res.send(req.user);
+
+- that's all thanks
+
+
+
+
+
+
+
+
+
+
+
